@@ -20,6 +20,7 @@ from custom_components.enion.coordinator import (
     _RECONNECT_DELAY_BASE,
     _RECONNECT_DELAY_MAX,
     _TOKEN_MAX_AGE,
+    _log_unknown_keys,
     _parse_iso8601_to_unix,
 )
 from tests.conftest import (
@@ -671,3 +672,109 @@ class TestNotifyListeners:
         )
         # Must not raise
         coordinator._handle_device(WS_DEVICE_EVENT)
+
+
+# ---------------------------------------------------------------------------
+# _log_unknown_keys
+# ---------------------------------------------------------------------------
+
+
+class TestLogUnknownKeys:
+    """Verify that unknown API keys are logged for debugging."""
+
+    async def test_unknown_keys_are_logged_for_battery_port(self):
+        """Unknown keys in battery port values should be logged."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            _log_unknown_keys("22", {"soc": 80, "power": 500, "mystery_field": 42})
+            mock_log.debug.assert_called_once()
+            call_args = mock_log.debug.call_args
+            # Check that the debug message includes the unknown key
+            assert "mystery_field" in str(call_args)
+            assert "22" in str(call_args)
+
+    async def test_known_keys_are_not_logged(self):
+        """Known keys should not trigger any logging."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            _log_unknown_keys("22", {"soc": 80, "power": 500, "freq": 50.0})
+            mock_log.debug.assert_not_called()
+
+    async def test_multiple_unknown_keys_are_logged_together(self):
+        """Multiple unknown keys should all appear in the debug message."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            _log_unknown_keys(
+                "108",
+                {
+                    "power": 1000,
+                    "energy": 5000,
+                    "mystery1": 1,
+                    "mystery2": 2,
+                    "mystery3": 3,
+                },
+            )
+            mock_log.debug.assert_called_once()
+            call_args = mock_log.debug.call_args
+            # All unknown keys should be mentioned
+            assert "mystery1" in str(call_args)
+            assert "mystery2" in str(call_args)
+            assert "mystery3" in str(call_args)
+
+    async def test_unknown_port_type_is_not_logged(self):
+        """Unknown port types should not trigger logging (no defined keys)."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            _log_unknown_keys("999", {"anything": 1, "goes": 2})
+            mock_log.debug.assert_not_called()
+
+    async def test_log_message_includes_github_issue_url(self):
+        """The log message should direct users to GitHub."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            _log_unknown_keys("22", {"soc": 80, "unknown_field": 42})
+            call_args = mock_log.debug.call_args
+            assert "github.com/buggedcom/Enion-HACS/issues" in str(call_args)
+
+    async def test_different_port_types_use_different_known_keys(self):
+        """Battery and Energy Meter ports should have different known keys."""
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            # "cur_current" is a known key for energy meter (108), not battery (22)
+            _log_unknown_keys("22", {"soc": 80, "cur_current": 5})
+            # Should log because cur_current is unknown for battery port
+            mock_log.debug.assert_called_once()
+            call_args = mock_log.debug.call_args
+            assert "cur_current" in str(call_args)
+
+    async def test_integration_with_handle_update_battery(self, coordinator):
+        """Unknown keys in a real battery update should be logged."""
+        coordinator._seed_from_me(ME_RESPONSE)
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            update_with_unknown = {
+                **WS_UPDATE_BATTERY,
+                "values": {
+                    **WS_UPDATE_BATTERY["values"],
+                    "new_battery_feature": "value",
+                },
+            }
+            coordinator._handle_update(update_with_unknown)
+            # Should have logged the unknown key
+            mock_log.debug.assert_called()
+            call_args_list = [str(call) for call in mock_log.debug.call_args_list]
+            # One of the debug calls should mention the unknown key
+            assert any("new_battery_feature" in call for call in call_args_list)
+
+    async def test_integration_with_handle_update_energy_meter(self, coordinator):
+        """Unknown keys in energy meter update should be logged."""
+        coordinator._seed_from_me(ME_RESPONSE)
+        with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
+            energy_update = {
+                "port_id": 104252,
+                "port_number": "108/0",
+                "values": {
+                    "power": 1000,
+                    "energy": 5000,
+                    "undocumented_metric": 99,
+                },
+            }
+            coordinator._handle_update(energy_update)
+            # Should have logged the unknown key
+            mock_log.debug.assert_called()
+            call_args_list = [str(call) for call in mock_log.debug.call_args_list]
+            # One of the debug calls should mention the unknown key
+            assert any("undocumented_metric" in call for call in call_args_list)

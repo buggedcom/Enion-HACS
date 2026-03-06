@@ -21,7 +21,7 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -35,6 +35,7 @@ from .const import (
     PORT_WEATHER,
     DATA_DEVICE,
     DATA_PORTS,
+    DATA_USER,
 )
 from .coordinator import EnionCoordinator
 
@@ -59,6 +60,8 @@ class EnionSensorDescription(SensorEntityDescription):
     port_prefix: str
     port_sub: str = "0"
     value_fn: Callable[[dict[str, Any]], Any] = lambda v: None
+    entity_registry_enabled_default: bool = True
+    entity_category: EntityCategory | None = None
 
 
 SENSOR_DESCRIPTIONS: tuple[EnionSensorDescription, ...] = (
@@ -466,6 +469,180 @@ SENSOR_DESCRIPTIONS: tuple[EnionSensorDescription, ...] = (
         # Handled specially in EnionOptimizerSensor
         value_fn=lambda v: None,
     ),
+    # ------------------------------------------------------------------ User / Account Info
+    EnionSensorDescription(
+        key="enion_user_area_code",
+        name="Enion Area Code",
+        port_prefix="user",
+        value_fn=lambda v: v.get("area_code"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_area_name",
+        name="Enion Area Name",
+        port_prefix="user",
+        value_fn=lambda v: v.get("area_name"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_country_name",
+        name="Enion Country",
+        port_prefix="user",
+        value_fn=lambda v: v.get("country_name"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_country_iso",
+        name="Enion Country ISO Code",
+        port_prefix="user",
+        value_fn=lambda v: v.get("country_iso_3166"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_currency",
+        name="Enion Currency",
+        port_prefix="user",
+        value_fn=lambda v: v.get("currency"),
+        entity_registry_enabled_default=True,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_last_ip",
+        name="Enion Last Login IP",
+        port_prefix="user",
+        value_fn=lambda v: v.get("last_ip"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_cheap_start_time",
+        name="Enion Cheap Transfer Start Time",
+        port_prefix="user",
+        value_fn=lambda v: v.get("cheap_start_time"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_cheap_end_time",
+        name="Enion Cheap Transfer End Time",
+        port_prefix="user",
+        value_fn=lambda v: v.get("cheap_end_time"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_cheap_transfer_price",
+        name="Enion Cheap Transfer Price",
+        native_unit_of_measurement="€/kWh",
+        port_prefix="user",
+        value_fn=lambda v: v.get("cheap_transfer_price"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_contract_address",
+        name="Enion Contract Address",
+        port_prefix="user",
+        value_fn=lambda v: v.get("contract_address"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_contract_name",
+        name="Enion Contract Name",
+        port_prefix="user",
+        value_fn=lambda v: v.get("contract_name"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_contract_type",
+        name="Enion Contract Type",
+        port_prefix="user",
+        value_fn=lambda v: v.get("contract_type"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_electricity_price",
+        name="Enion Electricity Price",
+        native_unit_of_measurement="€/kWh",
+        device_class=SensorDeviceClass.MONETARY,
+        port_prefix="user",
+        value_fn=lambda v: v.get("electricity_price"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_margin_price",
+        name="Enion Margin Price",
+        native_unit_of_measurement="€/kWh",
+        port_prefix="user",
+        value_fn=lambda v: v.get("margin_price"),
+        entity_registry_enabled_default=True,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_transfer_price",
+        name="Enion Transfer Price",
+        native_unit_of_measurement="€/kWh",
+        port_prefix="user",
+        value_fn=lambda v: v.get("transfer_price"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_meter_number",
+        name="Enion Meter Number",
+        port_prefix="user",
+        value_fn=lambda v: v.get("meter_number"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_zip_code",
+        name="Enion Zip Code",
+        port_prefix="user",
+        value_fn=lambda v: v.get("zip_code"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_has_cheap_transfer",
+        name="Enion Has Cheap Transfer",
+        port_prefix="user",
+        value_fn=lambda v: v.get("has_cheap_transfer"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_has_reserve_markets",
+        name="Enion Has Reserve Markets",
+        port_prefix="user",
+        value_fn=lambda v: v.get("has_reserve_markets"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_has_accept_reserve_markets",
+        name="Enion Has Accepted Reserve Markets",
+        port_prefix="user",
+        value_fn=lambda v: v.get("has_accept_reserve_markets"),
+        entity_registry_enabled_default=True,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EnionSensorDescription(
+        key="enion_user_is_vat_registered",
+        name="Enion Is VAT Registered",
+        port_prefix="user",
+        value_fn=lambda v: v.get("is_vat_registered"),
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 
@@ -492,6 +669,8 @@ async def async_setup_entry(
             entities.append(EnionWeatherSensor(coordinator, entry, desc, field="sun"))
         elif desc.key == "enion_battery_optimizer_state":
             entities.append(EnionOptimizerSensor(coordinator, entry, desc))
+        elif desc.port_prefix == "user":
+            entities.append(EnionUserSensor(coordinator, entry, desc))
         else:
             entities.append(EnionPortSensor(coordinator, entry, desc))
 
@@ -527,6 +706,9 @@ class EnionPortSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
         self.entity_description = description
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
         self._attr_device_info = _make_device_info(coordinator, entry)
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
+        if description.entity_category:
+            self._attr_entity_category = description.entity_category
         self._entry = entry
 
     @property
@@ -558,6 +740,9 @@ class EnionPriceSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
         self._current = current
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
         self._attr_device_info = _make_device_info(coordinator, entry)
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
+        if description.entity_category:
+            self._attr_entity_category = description.entity_category
 
     @property
     def native_value(self) -> float | None:
@@ -583,6 +768,9 @@ class EnionWeatherSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
         self._field = field
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
         self._attr_device_info = _make_device_info(coordinator, entry)
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
+        if description.entity_category:
+            self._attr_entity_category = description.entity_category
 
     @property
     def native_value(self) -> Any:
@@ -612,6 +800,9 @@ class EnionOptimizerSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
         self.entity_description = description
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
         self._attr_device_info = _make_device_info(coordinator, entry)
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
+        if description.entity_category:
+            self._attr_entity_category = description.entity_category
 
     @property
     def native_value(self) -> str | None:
@@ -636,3 +827,29 @@ class EnionOptimizerSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
             "next_event_time": next_event_time,
             "schedule": formatted_schedule,
         }
+
+
+class EnionUserSensor(CoordinatorEntity[EnionCoordinator], SensorEntity):
+    """A sensor backed by user account information."""
+
+    entity_description: EnionSensorDescription
+
+    def __init__(
+        self,
+        coordinator: EnionCoordinator,
+        entry: ConfigEntry,
+        description: EnionSensorDescription,
+    ) -> None:
+        super().__init__(coordinator)
+        self.entity_description = description
+        self._attr_unique_id = f"{entry.entry_id}_{description.key}"
+        self._attr_device_info = _make_device_info(coordinator, entry)
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
+        if description.entity_category:
+            self._attr_entity_category = description.entity_category
+
+    @property
+    def native_value(self) -> Any:
+        user_info = self.coordinator.get_user_info()
+        return self.entity_description.value_fn(user_info)
+

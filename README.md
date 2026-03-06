@@ -2,6 +2,8 @@
 
 A [HACS](https://hacs.xyz/) custom integration for [Enion](https://www.enion.fi/) — a Finnish smart energy management system by Sunergos that combines battery storage, solar, grid monitoring, and price-aware optimisation into a single hub.
 
+![preview of enion integration](./images/Integration.png)
+
 ## What is Enion?
 
 Enion is a cloud-connected energy management platform aimed at households and small businesses in Finland and the Nordic region. The physical hub (e.g. **Enion Mini 3.0**) connects to:
@@ -23,6 +25,10 @@ All device data is pushed in real time through Enion's cloud backend and is acce
 ## Features
 
 This integration connects Home Assistant to the Enion cloud using the same API as the official web app. Data arrives instantly via a persistent WebSocket (Phoenix channels) — there is no polling.
+
+Depending on your Enion setup we can probably expose more entities, however Please create an issue with information from your HA logs.
+
+![preview of enion integration](./images/Integration-Entities.png)
 
 ### Sensors
 
@@ -96,6 +102,32 @@ This integration connects Home Assistant to the Enion cloud using the same API a
 | Entity | Description |
 |---|---|
 | `sensor.enion_battery_optimizer_state` | Current optimizer state and schedule as attributes |
+
+#### User Account & Settings
+
+| Entity | Description |
+|---|---|
+| `sensor.enion_area_code` | Geographic area code (e.g., FI) |
+| `sensor.enion_area_name` | Geographic area name (e.g., Finland) |
+| `sensor.enion_country` | Country name |
+| `sensor.enion_country_iso_code` | Country ISO 3166 code |
+| `sensor.enion_currency` | Account currency (e.g., EUR) |
+| `sensor.enion_last_login_ip` | Last login IP address |
+| `sensor.enion_contract_name` | Electricity contract name |
+| `sensor.enion_contract_type` | Contract type (e.g., FIXED) |
+| `sensor.enion_contract_address` | Contract address |
+| `sensor.enion_meter_number` | Electric meter number |
+| `sensor.enion_zip_code` | ZIP/postal code |
+| `sensor.enion_electricity_price` | Current electricity price (€/kWh) |
+| `sensor.enion_margin_price` | Electricity margin price (€/kWh) |
+| `sensor.enion_transfer_price` | Grid transfer price (€/kWh) |
+| `sensor.enion_cheap_transfer_price` | Cheap transfer rate price (€/kWh) |
+| `sensor.enion_cheap_transfer_start_time` | Cheap transfer window start time |
+| `sensor.enion_cheap_transfer_end_time` | Cheap transfer window end time |
+| `sensor.enion_has_cheap_transfer` | Whether cheap transfer is enabled |
+| `sensor.enion_has_reserve_markets` | Whether reserve markets are available |
+| `sensor.enion_has_accepted_reserve_markets` | Whether reserve markets have been accepted |
+| `sensor.enion_is_vat_registered` | Whether account is VAT registered |
 
 ### Binary Sensors
 
@@ -182,6 +214,36 @@ Enion cloud  ──REST──▶  Login + /auth/me  (on startup)
 2. A Phoenix WebSocket connection is then opened to `wss://app.enion.fi/socket/websocket`, subscribing to the user channel (`web:user:{id}`) and the global channel (`web:global:0`).
 3. Every `update` event from the cloud is dispatched immediately to the relevant HA entities — no polling, no delay.
 4. If the connection drops, automatic reconnection uses exponential backoff (30 s → 60 s → … → 10 min cap) to avoid hammering the API.
+
+---
+
+## Reporting Missing Sensors
+
+The integration logs any API data fields that it receives but doesn't currently expose as sensors. If you see sensors in the Enion app that aren't available in Home Assistant, you can help us add them:
+
+### Enable Debug Logging
+
+1. Go to **Settings → Developer Tools → Logs**.
+2. At the bottom, enter this service call:
+
+```yaml
+service: logger.set_level
+data:
+  custom_components.enion.coordinator: DEBUG
+```
+
+3. Restart Home Assistant.
+4. Wait a few minutes for WebSocket updates to arrive.
+5. Search the logs for "Unknown keys detected" to find new API fields.
+
+### Submit an Issue
+
+If you find unknown fields, please [open a GitHub issue](https://github.com/buggedcom/Enion-HACS/issues) with:
+- The port type (e.g. `22` for Battery, `108` for Energy Meter)
+- The field names you found
+- A description of what the field represents (if you know)
+
+This helps us expand sensor coverage for future releases.
 
 ---
 

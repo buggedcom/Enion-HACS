@@ -26,9 +26,36 @@ from .const import (
     DATA_PRICES,
     DATA_WEATHER,
     DATA_OPTIMIZER,
+    DATA_USER,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Map of known port types to keys we explicitly handle from the API
+# This helps identify new/undocumented API fields for future expansion
+_KNOWN_PORT_KEYS: dict[str, set[str]] = {
+    PORT_BATTERY: {
+        "soc", "power", "energy", "phase_volt", "phase_curr", "freq", "status"
+    },
+    PORT_GRID: {
+        "power", "all_time_wh", "freq", "phase_volt", "phase_curr"
+    },
+    PORT_ENERGY: {
+        "power", "energy", "rms_voltage", "cur_current", "phases"
+    },
+    PORT_PRICES: {
+        "base_ts", "timestep", "prices"
+    },
+    PORT_WEATHER: {
+        "base_ts", "timestep", "weathers"
+    },
+    PORT_RELAY: {
+        "is_on"
+    },
+    PORT_OPTIMIZER: {
+        "commissioning_state", "commissioning_errcode", "events"
+    },
+}
 
 # Exponential backoff: delay = min(BASE * 2^attempt, MAX)
 _RECONNECT_DELAY_BASE = 30    # seconds
@@ -36,6 +63,29 @@ _RECONNECT_DELAY_MAX = 600    # 10 minutes
 
 # WS JWT token lifetime is 15 minutes; re-login when older than this.
 _TOKEN_MAX_AGE = 840          # 14 minutes
+
+
+def _log_unknown_keys(port_prefix: str, values: dict[str, Any]) -> None:
+    """Log any keys in values that aren't in our known set.
+
+    This helps identify new API fields that aren't yet exposed as sensors,
+    so users can report them for future incorporation.
+    """
+    known_keys = _KNOWN_PORT_KEYS.get(port_prefix, set())
+    if not known_keys:
+        return  # Unknown port type, don't log
+
+    received_keys = set(values.keys())
+    unknown_keys = received_keys - known_keys
+
+    if unknown_keys:
+        _LOGGER.debug(
+            "Unknown keys detected on %s port: %s. "
+            "If these are important values, please open an issue at "
+            "https://github.com/buggedcom/Enion-HACS/issues with this information",
+            port_prefix,
+            sorted(unknown_keys),
+        )
 
 
 def _parse_iso8601_to_unix(iso_str: str | int | float | None) -> int | None:
@@ -110,6 +160,7 @@ class EnionCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             DATA_PRICES: [],
             DATA_WEATHER: [],
             DATA_OPTIMIZER: {},
+            DATA_USER: {},
         }
 
     # ------------------------------------------------------------------
@@ -166,12 +217,16 @@ class EnionCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             port_id = port.get("id")
             port_number = port.get("port_number", "")
             if port_id is not None:
-                _LOGGER.debug("Seeding port: port_id=%s, port_number=%s, values=%s", port_id, port_number, port.get("values", {}))
+                port_values = port.get("values") or {}
+                port_prefix = port_number.split("/")[0]
+                _LOGGER.debug("Seeding port: port_id=%s, port_number=%s, values=%s", port_id, port_number, port_values)
+                # Log unknown keys during seed
+                _log_unknown_keys(port_prefix, port_values)
                 self._store[DATA_PORTS].setdefault(port_id, {}).update(
                     {
                         "port_number": port_number,
                         "type": port.get("type", ""),
-                        "values": port.get("values") or {},
+                        "values": port_values,
                     }
                 )
 
@@ -182,6 +237,42 @@ class EnionCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.device_meta.get("manufacturer"),
             self.device_meta.get("model"),
         )
+
+        # Seed user data from /auth/me response
+        user: dict[str, Any] = me.get("user") or {}
+        if user:
+            area: dict[str, Any] = user.get("area") or {}
+            country: dict[str, Any] = user.get("country") or {}
+            settings: dict[str, Any] = user.get("settings") or {}
+
+            self._store[DATA_USER].update(
+                {
+                    "area_code": area.get("code"),
+                    "area_id": area.get("id"),
+                    "area_name": area.get("name"),
+                    "country_id": country.get("id"),
+                    "country_name": country.get("name"),
+                    "country_iso_3166": country.get("iso_3166"),
+                    "currency": user.get("currency"),
+                    "last_ip": user.get("last_ip"),
+                    # Settings (excluding iban)
+                    "cheap_end_time": settings.get("cheapEndTime"),
+                    "cheap_start_time": settings.get("cheapStartTime"),
+                    "cheap_transfer_price": settings.get("cheapTransferPrice"),
+                    "contract_address": settings.get("contractAddress"),
+                    "contract_name": settings.get("contractName"),
+                    "contract_type": settings.get("contractType"),
+                    "electricity_price": settings.get("electricityPrice"),
+                    "has_accept_reserve_markets": settings.get("hasAcceptReserveMarkets"),
+                    "has_cheap_transfer": settings.get("hasCheapTransfer"),
+                    "has_reserve_markets": settings.get("hasReserveMarkets"),
+                    "is_vat_registered": settings.get("isVatRegistered"),
+                    "margin_price": settings.get("marginPrice"),
+                    "meter_number": settings.get("meterNumber"),
+                    "transfer_price": settings.get("transferPrice"),
+                    "zip_code": settings.get("zipCode"),
+                }
+            )
 
     async def async_shutdown(self) -> None:
         """Disconnect cleanly on HA stop."""
@@ -311,6 +402,9 @@ class EnionCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         _LOGGER.debug("Port update: port_id=%s, port_number=%s, values=%s", port_id, port_number, values)
 
+        # Log any unknown keys for debugging
+        _log_unknown_keys(port_prefix, values)
+
         # Merge into port store
         port_data = self._store[DATA_PORTS].setdefault(port_id, {})
         port_data["port_number"] = port_number
@@ -379,6 +473,10 @@ class EnionCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 # API returns price in tenths of cents, divide by 10 for ct/kWh
                 return price / 10 if price is not None else None
         return None
+
+    def get_user_info(self) -> dict[str, Any]:
+        """Return user account and settings information."""
+        return self._store.get(DATA_USER, {})
 
     # ------------------------------------------------------------------
     # Battery Optimizer (220/0)
