@@ -168,6 +168,8 @@ Both calendars are updated in real time via the WebSocket — no manual refresh 
 
 ### Via HACS (recommended)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=buggedcom&repository=Enion-hass&category=integration)
+
 1. Open HACS in your Home Assistant sidebar.
 2. Go to **Integrations** → click the three-dot menu → **Custom repositories**.
 3. Add `https://github.com/buggedcom/Enion-HACS` as an **Integration** repository.
