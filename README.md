@@ -172,7 +172,7 @@ Both calendars are updated in real time via the WebSocket — no manual refresh 
 
 1. Open HACS in your Home Assistant sidebar.
 2. Go to **Integrations** → click the three-dot menu → **Custom repositories**.
-3. Add `https://github.com/buggedcom/Enion-HACS` as an **Integration** repository.
+3. Add `https://github.com/buggedcom/Enion-hass` as an **Integration** repository.
 4. Search for **Enion** in HACS and click **Download**.
 5. Restart Home Assistant.
 
@@ -240,7 +240,7 @@ data:
 
 ### Submit an Issue
 
-If you find unknown fields, please [open a GitHub issue](https://github.com/buggedcom/Enion-HACS/issues) with:
+If you find unknown fields, please [open a GitHub issue](https://github.com/buggedcom/Enion-hass/issues) with:
 - The port type (e.g. `22` for Battery, `108` for Energy Meter)
 - The field names you found
 - A description of what the field represents (if you know)
@@ -267,7 +267,7 @@ Any Enion hub registered to your account should work. The integration has been d
 
 ## Contributing
 
-Bug reports and pull requests are welcome at [github.com/buggedcom/Enion-HACS](https://github.com/buggedcom/Enion-HACS/issues).
+Bug reports and pull requests are welcome at [github.com/buggedcom/Enion-hass](https://github.com/buggedcom/Enion-hass/issues).
 
 ### Running tests
 

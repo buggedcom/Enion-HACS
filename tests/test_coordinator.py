@@ -729,7 +729,7 @@ class TestLogUnknownKeys:
         with patch("custom_components.enion.coordinator._LOGGER") as mock_log:
             _log_unknown_keys("22", {"soc": 80, "unknown_field": 42})
             call_args = mock_log.debug.call_args
-            assert "github.com/buggedcom/Enion-HACS/issues" in str(call_args)
+            assert "github.com/buggedcom/Enion-hass/issues" in str(call_args)
 
     async def test_different_port_types_use_different_known_keys(self):
         """Battery and Energy Meter ports should have different known keys."""

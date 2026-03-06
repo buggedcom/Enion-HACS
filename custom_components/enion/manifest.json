@@ -4,9 +4,9 @@
   "codeowners": ["@buggedcom"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/buggedcom/enion-hacs",
+  "documentation": "https://github.com/buggedcom/enion-hass",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/buggedcom/enion-hacs/issues",
+  "issue_tracker": "https://github.com/buggedcom/enion-hass/issues",
   "requirements": ["aiohttp>=3.9.0"],
   "version": "0.1.4"
 }

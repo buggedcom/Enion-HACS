@@ -82,7 +82,7 @@ def _log_unknown_keys(port_prefix: str, values: dict[str, Any]) -> None:
         _LOGGER.debug(
             "Unknown keys detected on %s port: %s. "
             "If these are important values, please open an issue at "
-            "https://github.com/buggedcom/Enion-HACS/issues with this information",
+            "https://github.com/buggedcom/Enion-hass/issues with this information",
             port_prefix,
             sorted(unknown_keys),
         )
