@@ -26,46 +26,96 @@ This integration connects Home Assistant to the Enion cloud using the same API a
 
 ### Sensors
 
+#### Battery
+
 | Entity | Unit | Description |
 |---|---|---|
-| Battery State of Charge | % | Current battery charge level |
-| Battery Power | W | Charge (+) / discharge (−) power |
-| Battery Energy | Wh | Cumulative battery energy |
-| Battery Voltage | V | AC phase voltage at the inverter |
-| Battery Current | A | AC phase current at the inverter |
-| Battery Frequency | Hz | AC frequency at the inverter |
-| Battery Status | — | Text status (e.g. `charging`, `discharging`, `idle`) |
-| Grid Power | W | Import (+) / export (−) from the grid |
-| Grid Energy (All Time) | Wh | Cumulative grid energy |
-| Grid Frequency | Hz | Grid frequency |
-| Grid Voltage L1 | V | Grid phase voltage |
-| Grid Current L1 | A | Grid phase current |
-| Energy Meter Power | W | Household consumption |
-| Energy Meter Energy | Wh | Cumulative household energy |
-| Energy Meter RMS Voltage | V | RMS voltage at the energy meter |
-| Energy Meter Current | A | Current at the energy meter |
-| Electricity Price (Current Hour) | ct/kWh | Live spot price for the current hour |
-| Electricity Price (Next Hour) | ct/kWh | Spot price for the next hour |
-| Outside Temperature | °C | Weather forecast temperature |
-| Wind Speed | m/s | Weather forecast wind speed |
+| `sensor.enion_battery_state_of_charge` | % | Current battery charge level |
+| `sensor.enion_battery_power` | W | Charge (+) / discharge (−) power |
+| `sensor.enion_battery_energy` | Wh | Current battery energy stored |
+| `sensor.enion_battery_voltage_l1` | V | AC voltage at inverter (Phase 1) |
+| `sensor.enion_battery_voltage_l2` | V | AC voltage at inverter (Phase 2) |
+| `sensor.enion_battery_voltage_l3` | V | AC voltage at inverter (Phase 3) |
+| `sensor.enion_battery_current_l1` | A | AC current at inverter (Phase 1) |
+| `sensor.enion_battery_current_l2` | A | AC current at inverter (Phase 2) |
+| `sensor.enion_battery_current_l3` | A | AC current at inverter (Phase 3) |
+| `sensor.enion_battery_frequency` | Hz | AC frequency at the inverter |
+| `sensor.enion_battery_status` | — | Text status (e.g. `OK`, `Communication Failure`) |
 
-More sensors could be added if so configured in Enion, but they will need to be manually added to the repository at this stage.
+#### Grid
+
+| Entity | Unit | Description |
+|---|---|---|
+| `sensor.enion_grid_power` | W | Import (+) / export (−) from the grid |
+| `sensor.enion_grid_energy_all_time` | Wh | Cumulative grid energy (all time) |
+| `sensor.enion_grid_frequency` | Hz | Grid frequency |
+| `sensor.enion_grid_voltage_l1` | V | Grid phase voltage (Phase 1) |
+| `sensor.enion_grid_voltage_l2` | V | Grid phase voltage (Phase 2) |
+| `sensor.enion_grid_voltage_l3` | V | Grid phase voltage (Phase 3) |
+| `sensor.enion_grid_current_l1` | A | Grid phase current (Phase 1) |
+| `sensor.enion_grid_current_l2` | A | Grid phase current (Phase 2) |
+| `sensor.enion_grid_current_l3` | A | Grid phase current (Phase 3) |
+
+#### Energy Meter
+
+| Entity | Unit | Description |
+|---|---|---|
+| `sensor.enion_energy_meter_power` | W | Household consumption |
+| `sensor.enion_energy_meter_energy` | Wh | Cumulative household energy |
+| `sensor.enion_energy_meter_rms_voltage_l1` | V | RMS voltage at meter (Phase 1) |
+| `sensor.enion_energy_meter_rms_voltage_l2` | V | RMS voltage at meter (Phase 2) |
+| `sensor.enion_energy_meter_rms_voltage_l3` | V | RMS voltage at meter (Phase 3) |
+| `sensor.enion_energy_meter_current_l1` | A | Current at meter (Phase 1) |
+| `sensor.enion_energy_meter_current_l2` | A | Current at meter (Phase 2) |
+| `sensor.enion_energy_meter_current_l3` | A | Current at meter (Phase 3) |
+| `sensor.enion_energy_meter_power_factor_l1` | — | Power factor (Phase 1) |
+| `sensor.enion_energy_meter_power_factor_l2` | — | Power factor (Phase 2) |
+| `sensor.enion_energy_meter_power_factor_l3` | — | Power factor (Phase 3) |
+| `sensor.enion_energy_meter_real_power_l1` | W | Real power (Phase 1) |
+| `sensor.enion_energy_meter_real_power_l2` | W | Real power (Phase 2) |
+| `sensor.enion_energy_meter_real_power_l3` | W | Real power (Phase 3) |
+
+#### Electricity Pricing
+
+| Entity | Unit | Description |
+|---|---|---|
+| `sensor.enion_electricity_price_current_hour` | ct/kWh | Spot price for the current hour |
+| `sensor.enion_electricity_price_next_hour` | ct/kWh | Spot price for the next hour |
+
+#### Weather
+
+| Entity | Unit | Description |
+|---|---|---|
+| `sensor.enion_outside_temperature` | °C | Hourly weather forecast temperature |
+| `sensor.enion_wind_speed` | m/s | Hourly weather forecast wind speed |
+| `sensor.enion_wind_direction` | — | Hourly weather forecast wind direction (°) |
+| `sensor.enion_sun_condition` | — | Hourly weather forecast sun percentage (0–100) |
+
+#### Battery Optimizer
+
+| Entity | Description |
+|---|---|
+| `sensor.enion_battery_optimizer_state` | Current optimizer state and schedule as attributes |
 
 ### Binary Sensors
 
 | Entity | Description |
 |---|---|
-| Device Online | Whether the Enion hub is connected to the cloud |
-| Relay 1–5 | On/off state of each relay output |
+| `binary_sensor.enion_device_online` | Whether the Enion hub is connected to the cloud |
+| `binary_sensor.enion_relay_1` | On/off state of relay output 1 |
+| `binary_sensor.enion_relay_2` | On/off state of relay output 2 |
+| `binary_sensor.enion_relay_3` | On/off state of relay output 3 |
+| `binary_sensor.enion_relay_4` | On/off state of relay output 4 |
+| `binary_sensor.enion_relay_5` | On/off state of relay output 5 |
 
-### Calendar
+### Calendars
 
 | Entity | Description |
 |---|---|
-| Battery Optimizer Schedule | Upcoming battery optimiser events as a HA calendar |
-| Weather Forecast | Hourly weather forecast as a HA calendar |
+| `calendar.enion_battery_optimizer_schedule` | Upcoming battery optimiser events showing scheduled charging/discharging windows |
+| `calendar.enion_weather_forecast` | Hourly weather forecast with temperature, wind speed, direction, and sun percentage |
 
-**Battery Optimizer Schedule** exposes the future charge/discharge schedule that the Enion cloud optimiser plans for your battery. Each event represents a scheduled optimiser state (e.g. `CHARGE`, `NET_ZERO`, `AVOID_SELL`) and spans from its scheduled start time until the next event begins (or one hour if it is the last event in the schedule).
+**Battery Optimizer Schedule** exposes the future charge/discharge schedule that the Enion cloud optimiser plans for your battery. Each event represents a scheduled optimiser state (e.g. `BATTERY_OPTIMIZER_STATE_CHARGE`, `BATTERY_OPTIMIZER_STATE_NET_ZERO`, `BATTERY_OPTIMIZER_STATE_AVOID_SELL`) and spans from its scheduled start time until the next event begins (or one hour if it is the last event in the schedule).
 
 **Weather Forecast** exposes the hourly weather forecast as calendar events. Each one-hour event includes the temperature and wind speed in the event title, with full details (wind direction, sun percentage) in the event description. When the Enion cloud pushes an updated forecast for a time slot that has already been received, the calendar automatically reflects the latest values — there are no duplicate events.
 
@@ -88,7 +138,7 @@ Both calendars are updated in real time via the WebSocket — no manual refresh 
 
 1. Open HACS in your Home Assistant sidebar.
 2. Go to **Integrations** → click the three-dot menu → **Custom repositories**.
-3. Add `https://github.com/ollieread/enion-hacs` as an **Integration** repository.
+3. Add `https://github.com/buggedcom/Enion-HACS` as an **Integration** repository.
 4. Search for **Enion** in HACS and click **Download**.
 5. Restart Home Assistant.
 
@@ -153,7 +203,7 @@ Any Enion hub registered to your account should work. The integration has been d
 
 ## Contributing
 
-Bug reports and pull requests are welcome at [github.com/ollieread/enion-hacs](https://github.com/ollieread/enion-hacs/issues).
+Bug reports and pull requests are welcome at [github.com/buggedcom/Enion-HACS](https://github.com/buggedcom/Enion-HACS/issues).
 
 ### Running tests
 

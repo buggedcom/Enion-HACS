@@ -82,7 +82,7 @@ class EnionClient:
                     _LOGGER.error("Login failed with HTTP %d", resp.status)
                 raise EnionApiError(f"Login failed with HTTP {resp.status}")
             data = await resp.json()
-            _LOGGER.debug("Login successful, token received: %s", bool(data.get("token")))
+            _LOGGER.debug("Login successful, token received: <redacted>")
             # The login response contains a token used for the WebSocket
             self._ws_token = data.get("token")
             return data
